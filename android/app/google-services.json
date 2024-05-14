@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "413704189994",
+    "project_id": "pfinder-d76e3",
+    "storage_bucket": "pfinder-d76e3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:413704189994:android:0853233e834177bec8eb53",
+        "android_client_info": {
+          "package_name": "com.example.petfinder"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBgh11EYPofPUwAywR2nT0AnJsVPRIWlU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

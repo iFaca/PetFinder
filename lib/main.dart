@@ -2,16 +2,26 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+//Mapas
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+//Permisos
 import 'package:permission_handler/permission_handler.dart';
+//Firebase
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
 
   // This widget is the root of your application.
   @override
@@ -33,6 +43,62 @@ class MyHomePage extends StatefulWidget {
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class PetsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Página Mascotas'),
+      ),
+      body: Center(
+        child: Text('Esta es la página de mascotas'),
+      ),
+    );
+  }
+}
+
+class SearchPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Página busqueda'),
+      ),
+      body: Center(
+        child: Text('Esta es la página de busqueda'),
+      ),
+    );
+  }
+}
+
+class UserPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Página de usuario'),
+      ),
+      body: Center(
+        child: Text('Esta es la página de usuario'),
+      ),
+    );
+  }
+}
+
+class ConfigPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Página config'),
+      ),
+      body: Center(
+        child: Text('Esta es la página de config'),
+      ),
+    );
+  }
 }
 
 
@@ -66,13 +132,13 @@ class _MyHomePageState extends State<MyHomePage> {
   });
   }
 
-  Widget _bottomAction(IconData icon) {
+  Widget _bottomAction(IconData icon, VoidCallback onPressed) {
     return InkWell(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Icon(icon),
       ),
-      onTap: () {},
+      onTap: onPressed,
     );
   }
 
@@ -97,11 +163,23 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget> [
-            _bottomAction(FontAwesomeIcons.search),
-            _bottomAction(FontAwesomeIcons.dog),
+            _bottomAction(FontAwesomeIcons.search, () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => SearchPage()));
+              },
+            ),
+            _bottomAction(FontAwesomeIcons.dog, () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => PetsPage()));
+              },
+            ),
             const SizedBox(width: 48.0),
-            _bottomAction(FontAwesomeIcons.user),
-            _bottomAction(Icons.settings),
+            _bottomAction(FontAwesomeIcons.user, () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => UserPage()));
+              },
+            ),
+            _bottomAction(Icons.settings, () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => ConfigPage()));
+              },
+            ),
           ],
         ),
       ),
@@ -143,23 +221,8 @@ class _MyHomePageState extends State<MyHomePage> {
           target: LatLng(0, 0), // Establece la posición inicial del mapa
           zoom: 12, // Establece el nivel de zoom inicial
         ),
-        markers: _createMarkers(), // Agrega marcadores al mapa
       ),
     );
-  }
-
-  Set<Marker> _createMarkers() {
-    return <Marker>{
-      Marker(
-        markerId: MarkerId('mascota-1'), // Identificador único del marcador
-        position: LatLng(0, 0), // Posición del marcador en coordenadas (latitud, longitud)
-        infoWindow: InfoWindow(
-          title: 'Mascota perdida', // Título del infoWindow
-          snippet: 'Descripción de la mascota', // Descripción adicional del infoWindow
-        ),
-      ),
-      // Agrega más marcadores según sea necesario
-    };
   }
 
 }
