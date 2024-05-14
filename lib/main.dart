@@ -57,10 +57,19 @@ class PetsPage extends StatelessWidget {
       body: FutureBuilder(
           future: getPets(),
           builder: ((context,snapshot) {
-            return const Text('data');
-          }
-          )
-      )
+            if (snapshot.hasData) {
+              return ListView.builder(
+                itemCount: snapshot.data?.length,
+                itemBuilder: (context, index){
+                  return Text(snapshot.data?[index]['type']);
+                },
+              );
+            } else {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            })),
     );
   }
 }
