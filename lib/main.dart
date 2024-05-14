@@ -10,6 +10,8 @@ import 'package:permission_handler/permission_handler.dart';
 //Firebase
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:petfinder/firebase_service.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,9 +54,13 @@ class PetsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Página Mascotas'),
       ),
-      body: Center(
-        child: Text('Esta es la página de mascotas'),
-      ),
+      body: FutureBuilder(
+          future: getPets(),
+          builder: ((context,snapshot) {
+            return const Text('data');
+          }
+          )
+      )
     );
   }
 }
@@ -67,7 +73,7 @@ class SearchPage extends StatelessWidget {
         title: Text('Página busqueda'),
       ),
       body: Center(
-        child: Text('Esta es la página de busqueda'),
+        child: Text('Esta es la página de '),
       ),
     );
   }
