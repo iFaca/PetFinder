@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 //Mapas
@@ -8,8 +7,6 @@ import 'package:geolocator/geolocator.dart';
 //Permisos
 import 'package:permission_handler/permission_handler.dart';
 //Firebase
-import 'package:firebase_core/firebase_core.dart';
-import 'package:petfinder/firebase_options.dart';
 import 'package:petfinder/firebase_service.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -43,6 +40,12 @@ class PetsPage extends StatelessWidget {
               );
             }
           })),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.pushNamed(context, '/add');
+        },
+          child: const Icon(Icons.add),
+      ),
     );
   }
 }
