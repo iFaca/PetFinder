@@ -17,12 +17,17 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class PetsPage extends StatelessWidget {
+class PetsPage extends StatefulWidget {
+  @override
+  _PetsPageState createState() => _PetsPageState();
+}
+
+class _PetsPageState extends State<PetsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Página Mascotas'),
+        title: Text('Mis Mascotas'),
       ),
       body: FutureBuilder(
           future: getPets(),
@@ -41,8 +46,9 @@ class PetsPage extends StatelessWidget {
             }
           })),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.pushNamed(context, '/add');
+          onPressed: () async{
+            await Navigator.pushNamed(context, '/add');
+            setState(() {});
         },
           child: const Icon(Icons.add),
       ),

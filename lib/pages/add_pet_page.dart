@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petfinder/firebase_service.dart';
 
 class AddPetPage extends StatefulWidget {
   const AddPetPage({super.key});
@@ -8,22 +9,33 @@ class AddPetPage extends StatefulWidget {
 }
 
 class _AddPetPageState extends State<AddPetPage> {
+
+  TextEditingController petController = TextEditingController(text:"");
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Pet'),
+        title: const Text('Agregar mascota'),
       ),
-      body: Column(
+    body: Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: Column(
         children: [
-          const TextField(
-            decoration: InputDecoration(
-              hintText: 'Ingrese mascota',
+           TextField(
+            controller: petController,
+            decoration: const InputDecoration(
+              hintText: 'Ingrese tipo mascota',
             ),
           ),
-          ElevatedButton(onPressed: (){}, child: const Text("Guardar"))
+          ElevatedButton(onPressed: () async {
+            await addPets(petController.text).then((_) {
+              Navigator.pop(context);
+            });
+          }, child: const Text("Guardar"))
         ],
       ),
+     ),
     );
   }
 }
