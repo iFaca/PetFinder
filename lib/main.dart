@@ -4,6 +4,7 @@ import 'firebase_options.dart';
 //pages
 import 'package:petfinder/pages/home_page.dart';
 import 'package:petfinder/pages/add_pet_page.dart';
+import 'package:petfinder/pages/edit_pet_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => MyHomePage(title: 'PetFinder'),
         '/add': (context) => const AddPetPage(),
+        '/edit': (context) => const EditPetPage(),
       },
     );
   }

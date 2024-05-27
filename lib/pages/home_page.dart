@@ -36,7 +36,13 @@ class _PetsPageState extends State<PetsPage> {
               return ListView.builder(
                 itemCount: snapshot.data?.length,
                 itemBuilder: (context, index){
-                  return Text(snapshot.data?[index]['type']);
+                  return ListTile(
+                    title: Text(snapshot.data?[index]['type']),
+                      onTap:(() {
+                          Navigator.pushNamed(context,"/edit",arguments: {
+                            "type": snapshot.data?[index]['type']
+                          });
+                        }));
                 },
               );
             } else {
