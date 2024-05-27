@@ -9,7 +9,12 @@ Future<List> getPets () async {
     CollectionReference collectionReferencePets = db.collection('pets');
     QuerySnapshot querySnapshotPets = await collectionReferencePets.get();
     querySnapshotPets.docs.forEach((documento) {
-      pets.add(documento.data());
+      final Map<String, dynamic> data = documento.data() as Map<String, dynamic> ;
+      final pet = {
+        "type": data['type'],
+        "uid":documento.id,
+      };
+      pets.add(pet);
     });
 
   return pets;
@@ -18,4 +23,9 @@ Future<List> getPets () async {
 //Guardar en base de datos
 Future<void> addPets (String type) async {
   await db.collection("pets").add({"type": type});
+}
+
+//Actualizar en base de datos
+Future<void> updatePets (String uid, String newtype) async {
+  await db.collection("pets").doc(uid).set({"type": newtype});
 }

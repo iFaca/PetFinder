@@ -38,10 +38,12 @@ class _PetsPageState extends State<PetsPage> {
                 itemBuilder: (context, index){
                   return ListTile(
                     title: Text(snapshot.data?[index]['type']),
-                      onTap:(() {
-                          Navigator.pushNamed(context,"/edit",arguments: {
-                            "type": snapshot.data?[index]['type']
+                      onTap:(() async {
+                          await Navigator.pushNamed(context,"/edit",arguments: {
+                            "type": snapshot.data?[index]['type'],
+                            "uid": snapshot.data?[index]['uid'],
                           });
+                          setState(() {});
                         }));
                 },
               );

@@ -30,11 +30,13 @@ class _EditPetPageState extends State<EditPetPage> {
               hintText: 'Ingrese tipo mascota',
             ),
           ),
-          ElevatedButton(onPressed: () async {
-            await addPets(petController.text).then((_) {
+          ElevatedButton(
+            onPressed: () async {
+            await updatePets(arguments['uid'],petController.text).then((_) {
               Navigator.pop(context);
             });
-          }, child: const Text("Actualizar"))
+          },
+              child: const Text("Actualizar"))
         ],
       ),
      ),
