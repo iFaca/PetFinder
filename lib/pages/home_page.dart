@@ -36,7 +36,45 @@ class _PetsPageState extends State<PetsPage> {
               return ListView.builder(
                 itemCount: snapshot.data?.length,
                 itemBuilder: (context, index){
-                  return ListTile(
+                  return Dismissible(
+                    onDismissed: (direction) async {
+                      await deletePets(snapshot.data?[index]['uid']);
+                      snapshot.data?.removeAt(index);
+                    },
+                    confirmDismiss: (direction) async {
+                      bool result = false;
+                      result = await showDialog(
+                          context: context,
+                          builder: (context){
+                          return AlertDialog(
+                            title: Text("Está seguro que quiere eliminar a ${snapshot.data?[index]['type']}?"),
+                            actions: [
+                              TextButton(onPressed: (){
+                                return Navigator.pop(
+                                    context,
+                                  false,
+                                );
+                              },
+                                  child: const Text("Cancelar", style: TextStyle(color: Colors.red))),
+                              TextButton(onPressed: (){
+                                return Navigator.pop(
+                                  context,
+                                  true,
+                                );
+                              },
+                                  child: const Text("Aceptar"))
+                            ],
+                          );
+                      });
+                      return result;
+                    },
+                    background: Container(
+                      color: Colors.red,
+                      child: const Icon(Icons.delete),
+                    ),
+                      direction: DismissDirection.endToStart,
+                      key: UniqueKey(),
+                  child: ListTile(
                     title: Text(snapshot.data?[index]['type']),
                       onTap:(() async {
                           await Navigator.pushNamed(context,"/edit",arguments: {
@@ -44,7 +82,8 @@ class _PetsPageState extends State<PetsPage> {
                             "uid": snapshot.data?[index]['uid'],
                           });
                           setState(() {});
-                        }));
+                        })),
+                  );
                 },
               );
             } else {

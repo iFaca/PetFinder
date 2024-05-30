@@ -29,3 +29,8 @@ Future<void> addPets (String type) async {
 Future<void> updatePets (String uid, String newtype) async {
   await db.collection("pets").doc(uid).set({"type": newtype});
 }
+
+//Borrar en base de datos
+Future<void> deletePets (String uid) async {
+  await db.collection("pets").doc(uid).delete();
+}
