@@ -75,12 +75,25 @@ class _PetsPageState extends State<PetsPage> {
                       direction: DismissDirection.endToStart,
                       key: UniqueKey(),
                   child: ListTile(
-                    title: Text(snapshot.data?[index]['type']),
-                      onTap:(() async {
-                          await Navigator.pushNamed(context,"/edit",arguments: {
-                            "type": snapshot.data?[index]['type'],
-                            "uid": snapshot.data?[index]['uid'],
-                          });
+                      title: Text(snapshot.data?[index]['name']),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Especie: ${snapshot.data?[index]['type']}"),
+                          Text("Ubicación: Latitud ${snapshot.data?[index]['location'].latitude}, Longitud ${snapshot.data?[index]['location'].longitude}"),
+                          Text("Género: ${snapshot.data?[index]['gender']}"),
+                          Text("Perdido: ${snapshot.data?[index]['lost'] ? 'Sí' : 'No'}"),
+                        ],
+                      ),
+                      onTap: (() async {
+                        await Navigator.pushNamed(context, "/edit", arguments: {
+                          "type": snapshot.data?[index]['type'],
+                          "uid": snapshot.data?[index]['uid'],
+                          "name": snapshot.data?[index]['name'],
+                          "location": snapshot.data?[index]['location'],
+                          "gender": snapshot.data?[index]['gender'],
+                          "lost": snapshot.data?[index]['lost'],
+                        });
                           setState(() {});
                         })),
                   );

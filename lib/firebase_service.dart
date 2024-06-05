@@ -12,6 +12,10 @@ Future<List> getPets () async {
       final Map<String, dynamic> data = documento.data() as Map<String, dynamic> ;
       final pet = {
         "type": data['type'],
+        "location": data['location'],
+        "gender": data['gender'],
+        "name": data['name'],
+        "lost": data['lost'],
         "uid":documento.id,
       };
       pets.add(pet);
@@ -20,9 +24,21 @@ Future<List> getPets () async {
   return pets;
 }
 
-//Guardar en base de datos
+/*
+//Guardar en base de datos test
 Future<void> addPets (String type) async {
   await db.collection("pets").add({"type": type});
+}*/
+
+// Guardar en base de datos
+Future<void> addPets(String type, String name, GeoPoint location, String gender, bool lost) async {
+  await db.collection("pets").add({
+    "type": type,
+    "name": name,
+    "location": location,
+    "gender": gender,
+    "lost": lost,
+  });
 }
 
 //Actualizar en base de datos
