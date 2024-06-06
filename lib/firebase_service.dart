@@ -24,12 +24,6 @@ Future<List> getPets () async {
   return pets;
 }
 
-/*
-//Guardar en base de datos test
-Future<void> addPets (String type) async {
-  await db.collection("pets").add({"type": type});
-}*/
-
 // Guardar en base de datos
 Future<void> addPets(String type, String name, GeoPoint location, String gender, bool lost) async {
   await db.collection("pets").add({
@@ -41,9 +35,15 @@ Future<void> addPets(String type, String name, GeoPoint location, String gender,
   });
 }
 
-//Actualizar en base de datos
-Future<void> updatePets (String uid, String newtype) async {
-  await db.collection("pets").doc(uid).set({"type": newtype});
+// Actualizar en base de datos
+Future<void> updatePets(String uid, String newtype, String newname, GeoPoint newlocation, String newgender, bool newlost) async {
+  await db.collection("pets").doc(uid).set({
+    "type": newtype,
+    "name": newname,
+    "location": newlocation,
+    "gender": newgender,
+    "lost": newlost,
+  });
 }
 
 //Borrar en base de datos
