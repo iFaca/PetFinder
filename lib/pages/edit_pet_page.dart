@@ -16,18 +16,32 @@ class _EditPetPageState extends State<EditPetPage> {
   TextEditingController longitudeController = TextEditingController(text: "");
   String gender = "Macho"; // Estado inicial del Dropdown
   bool lost = false;
+  bool _isInitialized = false;
+
+  // Variables para almacenar los datos de los argumentos
+  late String uid;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
+
+      // Inicializa los valores de los controladores y el estado solo una vez
+      uid = arguments['uid'];
+      typeController.text = arguments['type'];
+      nameController.text = arguments['name'];
+      latitudeController.text = arguments['location'].latitude.toString();
+      longitudeController.text = arguments['location'].longitude.toString();
+      gender = arguments['gender'] ?? 'Macho'; // Valor por defecto si es nulo
+      lost = arguments['lost'] ?? false;
+
+      _isInitialized = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
-
-    typeController.text = arguments['type'];
-    nameController.text = arguments['name'];
-    latitudeController.text = arguments['location'].latitude.toString();
-    longitudeController.text = arguments['location'].longitude.toString();
-    gender = (arguments['gender'] == "Macho" || arguments['gender'] == "Hembra") ? arguments['gender'] : "Macho";
-    lost = arguments['lost'];
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Editar mascota'),
@@ -63,8 +77,9 @@ class _EditPetPageState extends State<EditPetPage> {
                 ),
                 keyboardType: TextInputType.number,
               ),
-              DropdownButton<String>( // Dropdown para género
+              DropdownButton<String>(
                 value: gender,
+                hint: const Text('Seleccione género'),
                 items: <String>['Macho', 'Hembra'].map((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
@@ -84,6 +99,7 @@ class _EditPetPageState extends State<EditPetPage> {
                     onChanged: (bool? value) {
                       setState(() {
                         lost = value!;
+                        print(lost);
                       });
                     },
                   ),
@@ -98,7 +114,7 @@ class _EditPetPageState extends State<EditPetPage> {
                   );
 
                   await updatePets(
-                    arguments['uid'],
+                    uid,
                     typeController.text,
                     nameController.text,
                     location,
