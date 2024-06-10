@@ -78,11 +78,11 @@ class _EditPetPageState extends State<EditPetPage> {
                   markers: _selectedLocation == null
                       ? {}
                       : {
-                    Marker(
-                      markerId: MarkerId('selectedLocation'),
-                      position: _selectedLocation!,
-                    ),
-                  },
+                          Marker(
+                            markerId: MarkerId('selectedLocation'),
+                            position: _selectedLocation!,
+                          ),
+                        },
                 ),
               ),
               DropdownButton<String>(
@@ -133,7 +133,8 @@ class _EditPetPageState extends State<EditPetPage> {
                     });
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Por favor selecciona una ubicación')),
+                      SnackBar(
+                          content: Text('Por favor selecciona una ubicación')),
                     );
                   }
                 },

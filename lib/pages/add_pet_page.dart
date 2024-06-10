@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:petfinder/firebase_service.dart';
 
 class AddPetPage extends StatefulWidget {
-  const AddPetPage({super.key});
+  const AddPetPage({Key? key}) : super(key: key);
 
   @override
   State<AddPetPage> createState() => _AddPetPageState();
@@ -18,6 +18,7 @@ class _AddPetPageState extends State<AddPetPage> {
   String gender = "Macho";
   bool lost = false;
   bool _isLoadingLocation = true;
+  late CameraPosition _initialCameraPosition;
 
   final _formKey = GlobalKey<FormState>(); // Llave para el formulario
 
@@ -29,17 +30,40 @@ class _AddPetPageState extends State<AddPetPage> {
 
   Future<void> _getCurrentLocation() async {
     LocationPermission permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
       setState(() {
         _isLoadingLocation = false;
       });
       return;
     }
 
-    final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
     setState(() {
       _selectedLocation = LatLng(position.latitude, position.longitude);
+      _initialCameraPosition = CameraPosition(
+        target: _selectedLocation!,
+        zoom: 14.0,
+      );
       _isLoadingLocation = false;
+    });
+
+    // Agrega el marcador de la ubicación actual
+    _addCurrentLocationMarker();
+  }
+
+  void _addCurrentLocationMarker() {
+    setState(() {
+      _markers.clear(); // Limpia los marcadores anteriores
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('currentLocation'),
+          position: _selectedLocation!,
+          infoWindow: const InfoWindow(title: 'Mi ubicación'),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        ),
+      );
     });
   }
 
@@ -86,26 +110,24 @@ class _AddPetPageState extends State<AddPetPage> {
                   child: _isLoadingLocation
                       ? const Center(child: CircularProgressIndicator())
                       : GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: _selectedLocation ?? const LatLng(0, 0),
-                      zoom: 14.0,
-                    ),
-                    onTap: (LatLng location) {
-                      setState(() {
-                        _selectedLocation = location;
-                      });
-                    },
-                    markers: _selectedLocation == null
-                        ? {}
-                        : {
-                      Marker(
-                        markerId: MarkerId('selectedLocation'),
-                        position: _selectedLocation!,
-                      ),
-                    },
-                  ),
+                          initialCameraPosition: _initialCameraPosition,
+                          onTap: (LatLng location) {
+                            setState(() {
+                              _selectedLocation = location;
+                            });
+                          },
+                          markers: _selectedLocation == null
+                              ? {}
+                              : {
+                                  Marker(
+                                    markerId: MarkerId('selectedLocation'),
+                                    position: _selectedLocation!,
+                                  ),
+                                },
+                        ),
                 ),
-                if (_selectedLocation == null) // Mostrar error si no hay ubicación
+                if (_selectedLocation ==
+                    null) // Mostrar error si no hay ubicación
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: Text(
@@ -148,11 +170,13 @@ class _AddPetPageState extends State<AddPetPage> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    if (_formKey.currentState!.validate() && _selectedLocation != null) {
+                    if (_formKey.currentState!.validate() &&
+                        _selectedLocation != null) {
                       GeoPoint location = GeoPoint(
                         _selectedLocation!.latitude,
                         _selectedLocation!.longitude,
                       );
+
                       await addPets(
                         typeController.text,
                         nameController.text,
@@ -164,7 +188,9 @@ class _AddPetPageState extends State<AddPetPage> {
                       });
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Por favor completa todos los campos')),
+                        const SnackBar(
+                            content:
+                                Text('Por favor completa todos los campos')),
                       );
                     }
                   },

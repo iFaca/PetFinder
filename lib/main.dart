@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+
 //pages
 import 'package:petfinder/pages/home_page.dart';
-import 'package:petfinder/pages/add_pet_page.dart';
 import 'package:petfinder/pages/edit_pet_page.dart';
 
 void main() async {
@@ -24,12 +24,9 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => MyHomePage(title: 'PetFinder'),
-        '/add': (context) => const AddPetPage(),
-        '/edit': (context) => const EditPetPage(),
+        '/add': (context) => AddPetPage(),
+        '/edit': (context) => EditPetPage(),
       },
     );
   }
 }
-
-
-
