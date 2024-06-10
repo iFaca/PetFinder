@@ -14,10 +14,12 @@ class AddPetPage extends StatefulWidget {
 class _AddPetPageState extends State<AddPetPage> {
   TextEditingController typeController = TextEditingController(text: "");
   TextEditingController nameController = TextEditingController(text: "");
-  LatLng? _selectedLocation; // Variable para almacenar la ubicación seleccionada
+  LatLng? _selectedLocation;
   String gender = "Macho";
   bool lost = false;
-  bool _isLoadingLocation = true; // Indicador de carga de ubicación
+  bool _isLoadingLocation = true;
+
+  final _formKey = GlobalKey<FormState>(); // Llave para el formulario
 
   @override
   void initState() {
@@ -29,7 +31,7 @@ class _AddPetPageState extends State<AddPetPage> {
     LocationPermission permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
       setState(() {
-        _isLoadingLocation = false; // Actualizar indicador de carga
+        _isLoadingLocation = false;
       });
       return;
     }
@@ -37,7 +39,7 @@ class _AddPetPageState extends State<AddPetPage> {
     final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     setState(() {
       _selectedLocation = LatLng(position.latitude, position.longitude);
-      _isLoadingLocation = false; // Actualizar indicador de carga
+      _isLoadingLocation = false;
     });
   }
 
@@ -49,99 +51,127 @@ class _AddPetPageState extends State<AddPetPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(15.0),
-        child: SingleChildScrollView( // Para que no haya problemas de scroll
-          child: Column(
-            children: [
-              TextField(
-                controller: typeController,
-                decoration: const InputDecoration(
-                  hintText: 'Ingrese tipo mascota',
-                ),
-              ),
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  hintText: 'Ingrese nombre',
-                ),
-              ),
-              Container(
-                height: 300,
-                width: double.infinity,
-                child: _isLoadingLocation
-                    ? const Center(child: CircularProgressIndicator()) // Indicador de carga mientras se obtiene la ubicación
-                    : GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: _selectedLocation ?? const LatLng(0, 0), // Centrar en la ubicación obtenida
-                    zoom: 14.0,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey, // Asignar la llave del formulario
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: typeController,
+                  decoration: const InputDecoration(
+                    hintText: 'Ingrese tipo mascota',
                   ),
-                  onTap: (LatLng location) {
-                    setState(() {
-                      _selectedLocation = location;
-                    });
-                  },
-                  markers: _selectedLocation == null
-                      ? {}
-                      : {
-                    Marker(
-                      markerId: MarkerId('selectedLocation'),
-                      position: _selectedLocation!,
-                    ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor ingrese el tipo de mascota';
+                    }
+                    return null;
                   },
                 ),
-              ),
-              DropdownButton<String>( // Dropdown para género
-                value: gender,
-                items: <String>['Macho', 'Hembra'].map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    gender = newValue!;
-                  });
-                },
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: lost,
-                    onChanged: (bool? value) {
+                TextFormField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    hintText: 'Ingrese nombre',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor ingrese el nombre de la mascota';
+                    }
+                    return null;
+                  },
+                ),
+                Container(
+                  height: 300,
+                  width: double.infinity,
+                  child: _isLoadingLocation
+                      ? const Center(child: CircularProgressIndicator())
+                      : GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: _selectedLocation ?? const LatLng(0, 0),
+                      zoom: 14.0,
+                    ),
+                    onTap: (LatLng location) {
                       setState(() {
-                        lost = value!;
+                        _selectedLocation = location;
                       });
                     },
+                    markers: _selectedLocation == null
+                        ? {}
+                        : {
+                      Marker(
+                        markerId: MarkerId('selectedLocation'),
+                        position: _selectedLocation!,
+                      ),
+                    },
                   ),
-                  const Text('Perdido'),
-                ],
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (_selectedLocation != null) {
-                  GeoPoint location = GeoPoint(
-                  _selectedLocation!.latitude,
-                  _selectedLocation!.longitude,
-                  );
-                  await addPets(
-                    typeController.text,
-                    nameController.text,
-                    location,
-                    gender, // Cambio
-                    lost,
-                  ).then((_) {
-                    Navigator.pop(context);
-                  });
-                  } else {
-                    // Manejo de error si la ubicación no está seleccionada
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Por favor selecciona una ubicación')),
+                ),
+                if (_selectedLocation == null) // Mostrar error si no hay ubicación
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      'Por favor selecciona una ubicación en el mapa',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                DropdownButtonFormField<String>(
+                  value: gender,
+                  items: <String>['Macho', 'Hembra'].map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
                     );
-                  }
-                },
-                child: const Text("Guardar"),
-              ),
-            ],
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      gender = newValue!;
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor selecciona el género';
+                    }
+                    return null;
+                  },
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: lost,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          lost = value!;
+                        });
+                      },
+                    ),
+                    const Text('Perdido'),
+                  ],
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate() && _selectedLocation != null) {
+                      GeoPoint location = GeoPoint(
+                        _selectedLocation!.latitude,
+                        _selectedLocation!.longitude,
+                      );
+                      await addPets(
+                        typeController.text,
+                        nameController.text,
+                        location,
+                        gender,
+                        lost,
+                      ).then((_) {
+                        Navigator.pop(context);
+                      });
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Por favor completa todos los campos')),
+                      );
+                    }
+                  },
+                  child: const Text("Guardar"),
+                ),
+              ],
+            ),
           ),
         ),
       ),
