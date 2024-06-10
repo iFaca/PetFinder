@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Asegúrate de tener esta importación
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:petfinder/firebase_service.dart';
 
 class AddPetPage extends StatefulWidget {
@@ -12,10 +14,32 @@ class AddPetPage extends StatefulWidget {
 class _AddPetPageState extends State<AddPetPage> {
   TextEditingController typeController = TextEditingController(text: "");
   TextEditingController nameController = TextEditingController(text: "");
-  TextEditingController latitudeController = TextEditingController(text: "");
-  TextEditingController longitudeController = TextEditingController(text: "");
-  String gender = "Macho"; // Estado inicial del Dropdown // Cambio
+  LatLng? _selectedLocation; // Variable para almacenar la ubicación seleccionada
+  String gender = "Macho";
   bool lost = false;
+  bool _isLoadingLocation = true; // Indicador de carga de ubicación
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    LocationPermission permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      setState(() {
+        _isLoadingLocation = false; // Actualizar indicador de carga
+      });
+      return;
+    }
+
+    final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    setState(() {
+      _selectedLocation = LatLng(position.latitude, position.longitude);
+      _isLoadingLocation = false; // Actualizar indicador de carga
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,21 +64,32 @@ class _AddPetPageState extends State<AddPetPage> {
                   hintText: 'Ingrese nombre',
                 ),
               ),
-              TextField(
-                controller: latitudeController,
-                decoration: const InputDecoration(
-                  hintText: 'Ingrese latitud',
+              Container(
+                height: 300,
+                width: double.infinity,
+                child: _isLoadingLocation
+                    ? const Center(child: CircularProgressIndicator()) // Indicador de carga mientras se obtiene la ubicación
+                    : GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: _selectedLocation ?? const LatLng(0, 0), // Centrar en la ubicación obtenida
+                    zoom: 14.0,
+                  ),
+                  onTap: (LatLng location) {
+                    setState(() {
+                      _selectedLocation = location;
+                    });
+                  },
+                  markers: _selectedLocation == null
+                      ? {}
+                      : {
+                    Marker(
+                      markerId: MarkerId('selectedLocation'),
+                      position: _selectedLocation!,
+                    ),
+                  },
                 ),
-                keyboardType: TextInputType.number,
               ),
-              TextField(
-                controller: longitudeController,
-                decoration: const InputDecoration(
-                  hintText: 'Ingrese longitud',
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              DropdownButton<String>( // Dropdown para género // Cambio
+              DropdownButton<String>( // Dropdown para género
                 value: gender,
                 items: <String>['Macho', 'Hembra'].map((String value) {
                   return DropdownMenuItem<String>(
@@ -83,11 +118,11 @@ class _AddPetPageState extends State<AddPetPage> {
               ),
               ElevatedButton(
                 onPressed: () async {
+                  if (_selectedLocation != null) {
                   GeoPoint location = GeoPoint(
-                    double.parse(latitudeController.text),
-                    double.parse(longitudeController.text),
+                  _selectedLocation!.latitude,
+                  _selectedLocation!.longitude,
                   );
-
                   await addPets(
                     typeController.text,
                     nameController.text,
@@ -97,6 +132,12 @@ class _AddPetPageState extends State<AddPetPage> {
                   ).then((_) {
                     Navigator.pop(context);
                   });
+                  } else {
+                    // Manejo de error si la ubicación no está seleccionada
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Por favor selecciona una ubicación')),
+                    );
+                  }
                 },
                 child: const Text("Guardar"),
               ),

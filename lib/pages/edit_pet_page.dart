@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Asegúrate de tener esta importación
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:petfinder/firebase_service.dart';
 
 class EditPetPage extends StatefulWidget {
@@ -12,13 +13,10 @@ class EditPetPage extends StatefulWidget {
 class _EditPetPageState extends State<EditPetPage> {
   TextEditingController typeController = TextEditingController(text: "");
   TextEditingController nameController = TextEditingController(text: "");
-  TextEditingController latitudeController = TextEditingController(text: "");
-  TextEditingController longitudeController = TextEditingController(text: "");
-  String gender = "Macho"; // Estado inicial del Dropdown
+  String gender = "Macho";
   bool lost = false;
   bool _isInitialized = false;
-
-  // Variables para almacenar los datos de los argumentos
+  LatLng? _selectedLocation;
   late String uid;
 
   @override
@@ -27,14 +25,15 @@ class _EditPetPageState extends State<EditPetPage> {
     if (!_isInitialized) {
       final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
 
-      // Inicializa los valores de los controladores y el estado solo una vez
       uid = arguments['uid'];
       typeController.text = arguments['type'];
       nameController.text = arguments['name'];
-      latitudeController.text = arguments['location'].latitude.toString();
-      longitudeController.text = arguments['location'].longitude.toString();
-      gender = arguments['gender'] ?? 'Macho'; // Valor por defecto si es nulo
+      gender = arguments['gender'] ?? 'Macho';
       lost = arguments['lost'] ?? false;
+      _selectedLocation = LatLng(
+        arguments['location'].latitude,
+        arguments['location'].longitude,
+      );
 
       _isInitialized = true;
     }
@@ -48,7 +47,7 @@ class _EditPetPageState extends State<EditPetPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(15.0),
-        child: SingleChildScrollView( // Para que no haya problemas de scroll
+        child: SingleChildScrollView(
           child: Column(
             children: [
               TextField(
@@ -63,19 +62,28 @@ class _EditPetPageState extends State<EditPetPage> {
                   hintText: 'Ingrese nombre',
                 ),
               ),
-              TextField(
-                controller: latitudeController,
-                decoration: const InputDecoration(
-                  hintText: 'Ingrese latitud',
+              Container(
+                height: 300,
+                width: double.infinity,
+                child: GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: _selectedLocation ?? LatLng(0, 0),
+                    zoom: 11,
+                  ),
+                  onTap: (LatLng location) {
+                    setState(() {
+                      _selectedLocation = location;
+                    });
+                  },
+                  markers: _selectedLocation == null
+                      ? {}
+                      : {
+                    Marker(
+                      markerId: MarkerId('selectedLocation'),
+                      position: _selectedLocation!,
+                    ),
+                  },
                 ),
-                keyboardType: TextInputType.number,
-              ),
-              TextField(
-                controller: longitudeController,
-                decoration: const InputDecoration(
-                  hintText: 'Ingrese longitud',
-                ),
-                keyboardType: TextInputType.number,
               ),
               DropdownButton<String>(
                 value: gender,
@@ -99,7 +107,6 @@ class _EditPetPageState extends State<EditPetPage> {
                     onChanged: (bool? value) {
                       setState(() {
                         lost = value!;
-                        print(lost);
                       });
                     },
                   ),
@@ -108,21 +115,27 @@ class _EditPetPageState extends State<EditPetPage> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                  GeoPoint location = GeoPoint(
-                    double.parse(latitudeController.text),
-                    double.parse(longitudeController.text),
-                  );
+                  if (_selectedLocation != null) {
+                    GeoPoint location = GeoPoint(
+                      _selectedLocation!.latitude,
+                      _selectedLocation!.longitude,
+                    );
 
-                  await updatePets(
-                    uid,
-                    typeController.text,
-                    nameController.text,
-                    location,
-                    gender,
-                    lost,
-                  ).then((_) {
-                    Navigator.pop(context);
-                  });
+                    await updatePets(
+                      uid,
+                      typeController.text,
+                      nameController.text,
+                      location,
+                      gender,
+                      lost,
+                    ).then((_) {
+                      Navigator.pop(context);
+                    });
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Por favor selecciona una ubicación')),
+                    );
+                  }
                 },
                 child: const Text("Actualizar"),
               ),
