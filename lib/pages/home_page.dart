@@ -5,7 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:petfinder/firebase_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'search_page.dart'; // Importa la clase SearchPage desde su archivo correspondiente
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -32,7 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (status.isGranted) {
       // Permiso otorgado, puedes acceder a la ubicación
     } else {
-      // Permiso denegado, maneja este caso según tus necesidades
+      // Permiso denegado
     }
   }
 
@@ -57,9 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _onMapCreated(GoogleMapController controller) {
-    setState(() {
-      _mapController = controller;
-    });
+    _mapController = controller;
   }
 
   Widget _bottomAction(IconData icon, VoidCallback onPressed) {
@@ -94,8 +92,9 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             _bottomAction(FontAwesomeIcons.search, () {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => SearchPage()));
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) =>
+                      SearchPage())); // Vincula a la página de búsqueda
             }),
             _bottomAction(FontAwesomeIcons.dog, () {
               Navigator.of(context)
@@ -152,20 +151,11 @@ class _MyHomePageState extends State<MyHomePage> {
           zoom: 12,
         ),
         markers: _markers.toSet(),
-      ),
-    );
-  }
-}
-
-class SearchPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Página busqueda'),
-      ),
-      body: Center(
-        child: Text('Esta es la página de '),
+        onTap: (LatLng location) {
+          _loadMarkers(); // Actualizar los marcadores cuando se toca el mapa
+        },
+        onCameraIdle:
+            _loadMarkers, // Actualizar los marcadores cuando la cámara se detiene
       ),
     );
   }
@@ -244,7 +234,9 @@ class _PetsPageState extends State<PetsPage> {
                             Text(
                               "Perdido: ${snapshot.data?[index]['lost'] ? 'Sí' : 'No'}",
                               style: TextStyle(
-                                color: snapshot.data?[index]['lost'] ? Colors.red : Colors.black,
+                                color: snapshot.data?[index]['lost']
+                                    ? Colors.red
+                                    : Colors.black,
                               ),
                             ),
                           ],
@@ -304,127 +296,6 @@ class ConfigPage extends StatelessWidget {
       ),
       body: Center(
         child: Text('Esta es la página de config'),
-      ),
-    );
-  }
-}
-
-class AddPetPage extends StatefulWidget {
-  @override
-  State<AddPetPage> createState() => _AddPetPageState();
-}
-
-class _AddPetPageState extends State<AddPetPage> {
-  TextEditingController typeController = TextEditingController();
-  TextEditingController nameController = TextEditingController();
-  LatLng? _selectedLocation;
-  String gender = "Macho";
-  bool lost = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Agregar mascota'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                controller: typeController,
-                decoration: const InputDecoration(
-                  hintText: 'Ingrese tipo mascota',
-                ),
-              ),
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  hintText: 'Ingrese nombre',
-                ),
-              ),
-              Container(
-                height: 300,
-                width: double.infinity,
-                child: GoogleMap(
-                  initialCameraPosition: const CameraPosition(
-                    target: LatLng(0, 0),
-                    zoom: 2,
-                  ),
-                  onTap: (LatLng location) {
-                    setState(() {
-                      _selectedLocation = location;
-                    });
-                  },
-                  markers: _selectedLocation == null
-                      ? {}
-                      : {
-                          Marker(
-                            markerId: MarkerId('selectedLocation'),
-                            position: _selectedLocation!,
-                          ),
-                        },
-                ),
-              ),
-              DropdownButton<String>(
-                value: gender,
-                items: <String>['Macho', 'Hembra'].map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    gender = newValue!;
-                  });
-                },
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: lost,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        lost = value!;
-                      });
-                    },
-                  ),
-                  const Text('Perdido'),
-                ],
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (_selectedLocation != null &&
-                      typeController.text.isNotEmpty &&
-                      nameController.text.isNotEmpty) {
-                    GeoPoint location = GeoPoint(
-                      _selectedLocation!.latitude,
-                      _selectedLocation!.longitude,
-                    );
-                    await addPets(
-                      typeController.text,
-                      nameController.text,
-                      location,
-                      gender,
-                      lost,
-                    ).then((_) {
-                      Navigator.pop(context);
-                    });
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text(
-                              'Por favor completa todos los campos y selecciona una ubicación')),
-                    );
-                  }
-                },
-                child: const Text("Guardar"),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

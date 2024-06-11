@@ -19,6 +19,7 @@ class _AddPetPageState extends State<AddPetPage> {
   bool lost = false;
   bool _isLoadingLocation = true;
   late CameraPosition _initialCameraPosition;
+  List<Marker> _markers = [];
 
   final _formKey = GlobalKey<FormState>(); // Llave para el formulario
 
@@ -110,21 +111,21 @@ class _AddPetPageState extends State<AddPetPage> {
                   child: _isLoadingLocation
                       ? const Center(child: CircularProgressIndicator())
                       : GoogleMap(
-                          initialCameraPosition: _initialCameraPosition,
-                          onTap: (LatLng location) {
-                            setState(() {
-                              _selectedLocation = location;
-                            });
-                          },
-                          markers: _selectedLocation == null
-                              ? {}
-                              : {
-                                  Marker(
-                                    markerId: MarkerId('selectedLocation'),
-                                    position: _selectedLocation!,
-                                  ),
-                                },
-                        ),
+                    initialCameraPosition: _initialCameraPosition,
+                    onTap: (LatLng location) {
+                      setState(() {
+                        _selectedLocation = location;
+                      });
+                    },
+                    markers: _selectedLocation == null
+                        ? {}
+                        : {
+                      Marker(
+                        markerId: MarkerId('selectedLocation'),
+                        position: _selectedLocation!,
+                      ),
+                    },
+                  ),
                 ),
                 if (_selectedLocation ==
                     null) // Mostrar error si no hay ubicación
@@ -190,7 +191,7 @@ class _AddPetPageState extends State<AddPetPage> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content:
-                                Text('Por favor completa todos los campos')),
+                            Text('Por favor completa todos los campos')),
                       );
                     }
                   },
