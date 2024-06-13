@@ -16,6 +16,7 @@ class AddPetPage extends StatefulWidget {
 
 class _AddPetPageState extends State<AddPetPage> {
   TextEditingController nameController = TextEditingController(text: "");
+  TextEditingController rewardController = TextEditingController(text: "");
   LatLng? _selectedLocation;
   String gender = "Macho";
   bool lost = false;
@@ -113,7 +114,9 @@ class _AddPetPageState extends State<AddPetPage> {
                                   });
                                 },
                                 icon: Icon(FontAwesomeIcons.dog),
-                                color: petType == 'Perro' ? Colors.green : Colors.grey,
+                                color: petType == 'Perro'
+                                    ? Colors.green
+                                    : Colors.grey,
                               ),
                               IconButton(
                                 onPressed: () {
@@ -122,7 +125,9 @@ class _AddPetPageState extends State<AddPetPage> {
                                   });
                                 },
                                 icon: Icon(FontAwesomeIcons.cat),
-                                color: petType == 'Gato' ? Colors.green : Colors.grey,
+                                color: petType == 'Gato'
+                                    ? Colors.green
+                                    : Colors.grey,
                               ),
                             ],
                           ),
@@ -148,7 +153,9 @@ class _AddPetPageState extends State<AddPetPage> {
                                   });
                                 },
                                 icon: Icon(FontAwesomeIcons.mars),
-                                color: gender == 'Macho' ? Colors.blue : Colors.grey,
+                                color: gender == 'Macho'
+                                    ? Colors.blue
+                                    : Colors.grey,
                               ),
                               IconButton(
                                 onPressed: () {
@@ -157,7 +164,9 @@ class _AddPetPageState extends State<AddPetPage> {
                                   });
                                 },
                                 icon: Icon(FontAwesomeIcons.venus),
-                                color: gender == 'Hembra' ? Colors.pink : Colors.grey,
+                                color: gender == 'Hembra'
+                                    ? Colors.pink
+                                    : Colors.grey,
                               ),
                             ],
                           ),
@@ -208,7 +217,8 @@ class _AddPetPageState extends State<AddPetPage> {
                                 value: value,
                                 child: Text(
                                   value ? 'Sí' : 'No',
-                                  style: TextStyle(color: value ? Colors.red : Colors.black),
+                                  style: TextStyle(
+                                      color: value ? Colors.red : Colors.black),
                                 ),
                               );
                             }).toList(),
@@ -223,6 +233,27 @@ class _AddPetPageState extends State<AddPetPage> {
                     ),
                   ],
                 ),
+                if (isOwned == 'Sí' && lost == true)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 10),
+                      const Text('Recompensa:'),
+                      TextFormField(
+                        controller: rewardController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          hintText: '\$0',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor ingrese una recompensa';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
                 const SizedBox(height: 10),
                 const Text('Foto de la mascota:'),
                 _image == null
@@ -240,23 +271,24 @@ class _AddPetPageState extends State<AddPetPage> {
                   child: _isLoadingLocation
                       ? const Center(child: CircularProgressIndicator())
                       : GoogleMap(
-                    initialCameraPosition: _initialCameraPosition,
-                    onTap: (LatLng location) {
-                      setState(() {
-                        _selectedLocation = location;
-                      });
-                    },
-                    markers: _selectedLocation == null
-                        ? {}
-                        : {
-                      Marker(
-                        markerId: MarkerId('selectedLocation'),
-                        position: _selectedLocation!,
-                      ),
-                    },
-                  ),
+                          initialCameraPosition: _initialCameraPosition,
+                          onTap: (LatLng location) {
+                            setState(() {
+                              _selectedLocation = location;
+                            });
+                          },
+                          markers: _selectedLocation == null
+                              ? {}
+                              : {
+                                  Marker(
+                                    markerId: MarkerId('selectedLocation'),
+                                    position: _selectedLocation!,
+                                  ),
+                                },
+                        ),
                 ),
-                if (_selectedLocation == null) // Mostrar error si no hay ubicación
+                if (_selectedLocation ==
+                    null) // Mostrar error si no hay ubicación
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: Text(
@@ -297,12 +329,17 @@ class _AddPetPageState extends State<AddPetPage> {
                         lost,
                         isOwned,
                         _image?.path ?? '',
+                        isOwned == 'Sí' && lost == true
+                            ? rewardController.text
+                            : '0',
                       ).then((_) {
                         Navigator.pop(context);
                       });
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Por favor completa todos los campos')),
+                        const SnackBar(
+                            content:
+                                Text('Por favor completa todos los campos')),
                       );
                     }
                   },

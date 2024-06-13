@@ -24,6 +24,7 @@ class _EditPetPageState extends State<EditPetPage> {
   File? _image;
   String? imageUrl;
   String petType = "Perro";
+  TextEditingController rewardController = TextEditingController(text: "0");
 
   @override
   void didChangeDependencies() {
@@ -42,6 +43,7 @@ class _EditPetPageState extends State<EditPetPage> {
       );
       _selectedIsOwned = arguments['isOwned'] ?? 'Sí';
       imageUrl = arguments['image'];
+      rewardController.text = arguments['reward'] ?? '0';
 
       _isInitialized = true;
     }
@@ -196,6 +198,27 @@ class _EditPetPageState extends State<EditPetPage> {
                     ),
                   ],
                 ),
+                if (_selectedIsOwned == 'Sí' && lost == true)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 10),
+                      const Text('Recompensa:'),
+                      TextFormField(
+                        controller: rewardController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          hintText: 'Ingrese la recompensa',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor ingrese la recompensa';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
                 const SizedBox(height: 10),
                 const Text('Foto de la mascota:'),
                 _image == null
@@ -265,6 +288,7 @@ class _EditPetPageState extends State<EditPetPage> {
                         lost,
                         _selectedIsOwned,
                         _image?.path ?? imageUrl ?? '',
+                        rewardController.text,
                       ).then((_) {
                         Navigator.pop(context);
                       });
