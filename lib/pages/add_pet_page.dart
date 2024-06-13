@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:petfinder/firebase_service.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class AddPetPage extends StatefulWidget {
   const AddPetPage({Key? key}) : super(key: key);
@@ -12,7 +15,6 @@ class AddPetPage extends StatefulWidget {
 }
 
 class _AddPetPageState extends State<AddPetPage> {
-  TextEditingController typeController = TextEditingController(text: "");
   TextEditingController nameController = TextEditingController(text: "");
   LatLng? _selectedLocation;
   String gender = "Macho";
@@ -20,8 +22,12 @@ class _AddPetPageState extends State<AddPetPage> {
   bool _isLoadingLocation = true;
   late CameraPosition _initialCameraPosition;
   List<Marker> _markers = [];
+  File? _image;
+  String isOwned = "No";
+  String petType = "Perro";
 
   final _formKey = GlobalKey<FormState>(); // Llave para el formulario
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -68,6 +74,15 @@ class _AddPetPageState extends State<AddPetPage> {
     });
   }
 
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,31 +95,145 @@ class _AddPetPageState extends State<AddPetPage> {
           child: Form(
             key: _formKey, // Asignar la llave del formulario
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextFormField(
-                  controller: typeController,
-                  decoration: const InputDecoration(
-                    hintText: 'Ingrese tipo mascota',
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese el tipo de mascota';
-                    }
-                    return null;
-                  },
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Tipo de mascota:'),
+                          Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    petType = 'Perro';
+                                  });
+                                },
+                                icon: Icon(FontAwesomeIcons.dog),
+                                color: petType == 'Perro' ? Colors.green : Colors.grey,
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    petType = 'Gato';
+                                  });
+                                },
+                                icon: Icon(FontAwesomeIcons.cat),
+                                color: petType == 'Gato' ? Colors.green : Colors.grey,
+                              ),
+                            ],
+                          ),
+                          if (petType.isEmpty)
+                            const Text(
+                              'Por favor selecciona el tipo de mascota',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Género:'),
+                          Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    gender = 'Macho';
+                                  });
+                                },
+                                icon: Icon(FontAwesomeIcons.mars),
+                                color: gender == 'Macho' ? Colors.blue : Colors.grey,
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    gender = 'Hembra';
+                                  });
+                                },
+                                icon: Icon(FontAwesomeIcons.venus),
+                                color: gender == 'Hembra' ? Colors.pink : Colors.grey,
+                              ),
+                            ],
+                          ),
+                          if (gender.isEmpty)
+                            const Text(
+                              'Por favor selecciona el género de la mascota',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                TextFormField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    hintText: 'Ingrese nombre',
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese el nombre de la mascota';
-                    }
-                    return null;
-                  },
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('¿Es tu mascota?'),
+                          DropdownButtonFormField<String>(
+                            value: isOwned,
+                            items: <String>['Sí', 'No'].map((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                isOwned = newValue!;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('¿Está perdida?'),
+                          DropdownButtonFormField<bool>(
+                            value: lost,
+                            items: <bool>[true, false].map((bool value) {
+                              return DropdownMenuItem<bool>(
+                                value: value,
+                                child: Text(
+                                  value ? 'Sí' : 'No',
+                                  style: TextStyle(color: value ? Colors.red : Colors.black),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (bool? newValue) {
+                              setState(() {
+                                lost = newValue!;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 10),
+                const Text('Foto de la mascota:'),
+                _image == null
+                    ? const Text('No se ha seleccionado una imagen.')
+                    : Image.file(_image!, height: 200),
+                ElevatedButton(
+                  onPressed: _pickImage,
+                  child: const Text('Seleccionar imagen'),
+                ),
+                const SizedBox(height: 10),
+                const Text('Elije la última ubicación de la mascota:'),
                 Container(
                   height: 300,
                   width: double.infinity,
@@ -127,8 +256,7 @@ class _AddPetPageState extends State<AddPetPage> {
                     },
                   ),
                 ),
-                if (_selectedLocation ==
-                    null) // Mostrar error si no hay ubicación
+                if (_selectedLocation == null) // Mostrar error si no hay ubicación
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: Text(
@@ -136,62 +264,45 @@ class _AddPetPageState extends State<AddPetPage> {
                       style: TextStyle(color: Colors.red),
                     ),
                   ),
-                DropdownButtonFormField<String>(
-                  value: gender,
-                  items: <String>['Macho', 'Hembra'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      gender = newValue!;
-                    });
-                  },
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    hintText: 'Ingrese nombre',
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Por favor selecciona el género';
+                      return 'Por favor ingrese el nombre de la mascota';
                     }
                     return null;
                   },
                 ),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: lost,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          lost = value!;
-                        });
-                      },
-                    ),
-                    const Text('Perdido'),
-                  ],
-                ),
+                const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate() &&
-                        _selectedLocation != null) {
+                        _selectedLocation != null &&
+                        petType.isNotEmpty &&
+                        gender.isNotEmpty) {
                       GeoPoint location = GeoPoint(
                         _selectedLocation!.latitude,
                         _selectedLocation!.longitude,
                       );
 
                       await addPets(
-                        typeController.text,
+                        petType,
                         nameController.text,
                         location,
                         gender,
                         lost,
+                        isOwned,
+                        _image?.path ?? '',
                       ).then((_) {
                         Navigator.pop(context);
                       });
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content:
-                            Text('Por favor completa todos los campos')),
+                        const SnackBar(content: Text('Por favor completa todos los campos')),
                       );
                     }
                   },

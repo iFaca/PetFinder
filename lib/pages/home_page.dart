@@ -228,8 +228,6 @@ class _PetsPageState extends State<PetsPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text("Especie: ${snapshot.data?[index]['type']}"),
-                            Text(
-                                "Ubicación: Latitud ${snapshot.data?[index]['location'].latitude}, Longitud ${snapshot.data?[index]['location'].longitude}"),
                             Text("Género: ${snapshot.data?[index]['gender']}"),
                             Text(
                               "Perdido: ${snapshot.data?[index]['lost'] ? 'Sí' : 'No'}",
