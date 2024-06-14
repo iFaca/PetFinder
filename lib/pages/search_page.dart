@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -33,9 +34,7 @@ class _SearchPageState extends State<SearchPage> {
 
     return StreamBuilder<QuerySnapshot>(
       stream: _searchQuery.isNotEmpty
-          ? FirebaseFirestore.instance
-          .collection('pets')
-          .snapshots()
+          ? FirebaseFirestore.instance.collection('pets').snapshots()
           : FirebaseFirestore.instance.collection('pets').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
@@ -61,29 +60,38 @@ class _SearchPageState extends State<SearchPage> {
           itemBuilder: (context, index) {
             final pet = filteredPets[index];
             final location = pet['location'] as GeoPoint;
+            final reward = pet['reward'] ?? '0';
+            final petType = pet['type'];
+
             return ListTile(
+              leading: Icon(
+                petType.toLowerCase() == 'perro'
+                    ? FontAwesomeIcons.dog
+                    : FontAwesomeIcons.cat,
+                color: petType.toLowerCase() == 'perro' ? Colors.brown : Colors.orange,
+              ),
               title: Text(pet['name']),
-              subtitle: InkWell(
-                onTap: () {
-                  _showLocationOnMap(location.latitude, location.longitude);
-                },
-                child: Row(
-                  children: [
-                    Text('Tipo: ${pet['type']} - '),
-                    GestureDetector(
-                      onTap: () {
-                        _showLocationOnMap(location.latitude, location.longitude);
-                      },
-                      child: Text(
-                        'Ubicación',
-                        style: TextStyle(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
-                        ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Tipo: $petType'),
+                  Text(
+                    'Recompensa: \$${reward}',
+                    style: TextStyle(color: Colors.green),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      _showLocationOnMap(location.latitude, location.longitude);
+                    },
+                    child: Text(
+                      'Ubicación',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
           },
