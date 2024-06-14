@@ -33,9 +33,7 @@ class _SearchPageState extends State<SearchPage> {
     }
 
     return StreamBuilder<QuerySnapshot>(
-      stream: _searchQuery.isNotEmpty
-          ? FirebaseFirestore.instance.collection('pets').snapshots()
-          : FirebaseFirestore.instance.collection('pets').snapshots(),
+      stream: FirebaseFirestore.instance.collection('pets').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(
@@ -46,7 +44,10 @@ class _SearchPageState extends State<SearchPage> {
         final List<DocumentSnapshot> allPets = snapshot.data!.docs;
         final List<DocumentSnapshot> filteredPets = allPets.where((pet) {
           final type = pet['type'].toString().toLowerCase();
-          return type.contains(_searchQuery.toLowerCase());
+          final name = pet['name'].toString().toLowerCase();
+          final gender = pet['gender'].toString().toLowerCase();
+          final query = _searchQuery.toLowerCase();
+          return type.contains(query) || name.contains(query) || gender.contains(query);
         }).toList();
 
         if (filteredPets.isEmpty) {
@@ -62,6 +63,8 @@ class _SearchPageState extends State<SearchPage> {
             final location = pet['location'] as GeoPoint;
             final reward = pet['reward'] ?? '0';
             final petType = pet['type'];
+            final gender = pet['gender'];
+            final genderColor = gender.toLowerCase() == 'macho' ? Colors.blue : Colors.pink;
 
             return ListTile(
               leading: Icon(
@@ -75,6 +78,10 @@ class _SearchPageState extends State<SearchPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Tipo: $petType'),
+                  Text(
+                    'Género: $gender',
+                    style: TextStyle(color: genderColor),
+                  ),
                   Text(
                     'Recompensa: \$${reward}',
                     style: TextStyle(color: Colors.green),
