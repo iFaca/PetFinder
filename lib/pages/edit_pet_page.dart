@@ -222,7 +222,7 @@ class _EditPetPageState extends State<EditPetPage> {
                 const SizedBox(height: 10),
                 const Text('Foto de la mascota:'),
                 _image == null
-                    ? (imageUrl != null
+                    ? (imageUrl != null && imageUrl!.isNotEmpty
                     ? Image.network(imageUrl!, height: 200)
                     : Text('No se ha seleccionado una imagen.'))
                     : Image.file(_image!, height: 200),
