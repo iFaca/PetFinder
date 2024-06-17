@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -96,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   builder: (context) =>
                       SearchPage())); // Vincula a la página de búsqueda
             }),
-            _bottomAction(FontAwesomeIcons.dog, () {
+            _bottomAction(FontAwesomeIcons.paw, () {
               Navigator.of(context)
                   .push(MaterialPageRoute(builder: (context) => PetsPage()));
             }),
@@ -125,19 +126,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return SafeArea(
       child: Column(
         children: <Widget>[
-          _title(),
           Expanded(child: _maps()),
         ],
       ),
-    );
-  }
-
-  Widget _title() {
-    return Column(
-      children: <Widget>[
-        Text("Pet"),
-        Text("Finder"),
-      ],
     );
   }
 
@@ -174,98 +165,156 @@ class _PetsPageState extends State<PetsPage> {
         title: Text('Mis Mascotas'),
       ),
       body: FutureBuilder(
-          future: getPets(),
-          builder: ((context, snapshot) {
-            if (snapshot.hasData) {
-              return ListView.builder(
-                itemCount: snapshot.data?.length,
-                itemBuilder: (context, index) {
-                  return Dismissible(
-                    onDismissed: (direction) async {
-                      await deletePets(snapshot.data?[index]['uid']);
-                      snapshot.data?.removeAt(index);
-                    },
-                    confirmDismiss: (direction) async {
-                      bool result = false;
-                      result = await showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text(
-                                  "Está seguro que quiere eliminar a ${snapshot.data?[index]['type']}?"),
-                              actions: [
-                                TextButton(
-                                    onPressed: () {
-                                      return Navigator.pop(
-                                        context,
-                                        false,
-                                      );
-                                    },
-                                    child: const Text("Cancelar",
-                                        style: TextStyle(color: Colors.red))),
-                                TextButton(
-                                    onPressed: () {
-                                      return Navigator.pop(
-                                        context,
-                                        true,
-                                      );
-                                    },
-                                    child: const Text("Aceptar"))
-                              ],
-                            );
-                          });
-                      return result;
-                    },
-                    background: Container(
-                      color: Colors.red,
-                      child: const Icon(Icons.delete),
-                    ),
-                    direction: DismissDirection.endToStart,
-                    key: UniqueKey(),
-                    child: ListTile(
-                        title: Text(snapshot.data?[index]['name']),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Especie: ${snapshot.data?[index]['type']}"),
-                            Text("Género: ${snapshot.data?[index]['gender']}"),
-                            Text(
-                              "Perdido: ${snapshot.data?[index]['lost'] ? 'Sí' : 'No'}",
-                              style: TextStyle(
-                                color: snapshot.data?[index]['lost']
-                                    ? Colors.red
-                                    : Colors.black,
-                              ),
+        future: getPets(),
+        builder: ((context, snapshot) {
+          if (snapshot.hasData) {
+            return ListView.builder(
+              itemCount: snapshot.data?.length,
+              itemBuilder: (context, index) {
+                final pet = snapshot.data?[index];
+                final location = pet['location'] as GeoPoint;
+                final petType = pet['type'];
+                final gender = pet['gender'];
+                final genderColor = gender.toLowerCase() == 'macho' ? Colors.blue : Colors.pink;
+                final isLost = pet['lost'] == true;
+
+                return Dismissible(
+                  onDismissed: (direction) async {
+                    await deletePets(pet['uid']);
+                    snapshot.data?.removeAt(index);
+                  },
+                  confirmDismiss: (direction) async {
+                    bool result = false;
+                    result = await showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text("¿Está seguro que quiere eliminar a ${pet['type']}?"),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                return Navigator.pop(context, false);
+                              },
+                              child: const Text("Cancelar", style: TextStyle(color: Colors.red)),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                return Navigator.pop(context, true);
+                              },
+                              child: const Text("Aceptar"),
                             ),
                           ],
-                        ),
-                        onTap: () async {
-                          await Navigator.pushNamed(context, "/edit",
-                              arguments: {
-                                "type": snapshot.data?[index]['type'],
-                                "uid": snapshot.data?[index]['uid'],
-                                "name": snapshot.data?[index]['name'],
-                                "location": snapshot.data?[index]['location'],
-                                "gender": snapshot.data?[index]['gender'],
-                                "lost": snapshot.data?[index]['lost'],
-                              });
-                          setState(() {});
-                        }),
-                  );
-                },
-              );
-            } else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-          })),
+                        );
+                      },
+                    );
+                    return result;
+                  },
+                  background: Container(
+                    color: Colors.red,
+                    child: const Icon(Icons.delete),
+                  ),
+                  direction: DismissDirection.endToStart,
+                  key: UniqueKey(),
+                  child: Container(
+                    color: isLost ? Colors.red.withOpacity(0.1) : Colors.transparent,
+                    child: ListTile(
+                      leading: Icon(
+                        petType.toLowerCase() == 'perro'
+                            ? FontAwesomeIcons.dog
+                            : FontAwesomeIcons.cat,
+                        color: petType.toLowerCase() == 'perro' ? Colors.brown : Colors.orange,
+                      ),
+                      title: Row(
+                        children: [
+                          Text(pet['name']),
+                          if (isLost)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Text(
+                                'PERDIDA',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Tipo: $petType'),
+                          Text(
+                            'Género: $gender',
+                            style: TextStyle(color: genderColor),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              _showLocationOnMap(location.latitude, location.longitude);
+                            },
+                            child: Text(
+                              'Ubicación',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      onTap: () async {
+                        await Navigator.pushNamed(context, "/edit", arguments: {
+                          "type": pet['type'],
+                          "uid": pet['uid'],
+                          "name": pet['name'],
+                          "location": pet['location'],
+                          "gender": pet['gender'],
+                          "lost": pet['lost'],
+                          "isOwned": pet['isOwned'],
+                          "reward": pet['reward'],
+                          "image": pet['imagePath'],
+                        });
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                );
+              },
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        }),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await Navigator.pushNamed(context, '/add');
           setState(() {});
         },
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  void _showLocationOnMap(double latitude, double longitude) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        height: 300,
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(
+            target: LatLng(latitude, longitude),
+            zoom: 14.0,
+          ),
+          markers: {
+            Marker(
+              markerId: MarkerId('locationMarker'),
+              position: LatLng(latitude, longitude),
+            ),
+          },
+        ),
       ),
     );
   }
