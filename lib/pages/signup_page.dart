@@ -16,6 +16,7 @@ class _SignupPageState extends State<SignupPage> {
   String _errorMessage = '';
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _termsAccepted = false;
 
   Future<void> _signup() async {
     if (_emailController.text != _confirmEmailController.text) {
@@ -48,7 +49,7 @@ class _SignupPageState extends State<SignupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Crear tu cuenta'),
+        title: Text('Crear cuenta'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -130,12 +131,29 @@ class _SignupPageState extends State<SignupPage> {
                   },
                 ),
                 SizedBox(height: 20),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: _termsAccepted,
+                      onChanged: (value) {
+                        setState(() {
+                          _termsAccepted = value ?? false;
+                        });
+                      },
+                    ),
+                    Expanded(
+                      child: Text('Acepto los términos y condiciones'),
+                    ),
+                  ],
+                ),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: _termsAccepted
+                      ? () {
                     if (_formKey.currentState?.validate() ?? false) {
                       _signup();
                     }
-                  },
+                  }
+                      : null,
                   child: Text('Crear cuenta'),
                 ),
                 if (_errorMessage.isNotEmpty)
