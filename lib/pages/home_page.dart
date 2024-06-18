@@ -5,8 +5,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:petfinder/firebase_service.dart';
-import 'search_page.dart'; // Importa la clase SearchPage desde su archivo correspondiente
+import 'package:petfinder/pages/search_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -323,12 +324,30 @@ class _PetsPageState extends State<PetsPage> {
 class UserPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    User? user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Página de usuario'),
       ),
       body: Center(
-        child: Text('Esta es la página de usuario'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            if (user != null) Text('Email: ${user.email}'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red, // Cambiar el color del botón a rojo
+              ),
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.pushReplacementNamed(context, '/login');
+              },
+              child: Text('Cerrar sesión'),
+            ),
+          ],
+        ),
       ),
     );
   }
