@@ -65,3 +65,18 @@ Future<void> updatePets(String uid, String newtype, String newname,
 Future<void> deletePets(String uid) async {
   await db.collection("pets").doc(uid).delete();
 }
+
+// Guardar en base de datos
+Future<void> saveUserData(String uid, String name, String address, String contact) async {
+  await db.collection("users").doc(uid).set({
+    "name": name,
+    "address": address,
+    "contact": contact,
+  });
+}
+
+// Obtener datos de usuario
+Future<Map<String, dynamic>?> getUserData(String uid) async {
+  DocumentSnapshot doc = await db.collection("users").doc(uid).get();
+  return doc.exists ? doc.data() as Map<String, dynamic>? : null;
+}

@@ -336,33 +336,165 @@ class _PetsPageState extends State<PetsPage> {
   }
 }
 
-class UserPage extends StatelessWidget {
+class UserPage extends StatefulWidget {
+  @override
+  _UserPageState createState() => _UserPageState();
+}
+
+class _UserPageState extends State<UserPage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _contactController = TextEditingController();
+  User? user;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    user = _auth.currentUser;
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    if (user != null) {
+      Map<String, dynamic>? userData = await getUserData(user!.uid);
+      if (userData != null) {
+        _nameController.text = userData['name'] ?? '';
+        _addressController.text = userData['address'] ?? '';
+        _contactController.text = userData['contact'] ?? '';
+      }
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _saveUserData() async {
+    if (_formKey.currentState!.validate()) {
+      await saveUserData(
+        user!.uid,
+        _nameController.text,
+        _addressController.text,
+        _contactController.text,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Datos guardados con éxito')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    User? user = FirebaseAuth.instance.currentUser;
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Página de usuario'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            if (user != null) Text('Email: ${user.email}'),
-            SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    Colors.red, // Cambiar el color del botón a rojo
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              if (user != null)
+                Center(
+                  child: Text(
+                    'Email: ${user!.email}',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  Icon(FontAwesomeIcons.user),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(labelText: 'Nombre'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor ingrese su nombre';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
               ),
-              onPressed: () async {
-                await FirebaseAuth.instance.signOut();
-                Navigator.pushReplacementNamed(context, '/login');
-              },
-              child: Text('Cerrar sesión'),
-            ),
-          ],
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  Icon(FontAwesomeIcons.home),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _addressController,
+                      decoration: InputDecoration(labelText: 'Dirección'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor ingrese su dirección';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  Icon(FontAwesomeIcons.phone),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _contactController,
+                      decoration: InputDecoration(labelText: 'Contacto'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor ingrese su contacto';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _saveUserData,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
+                  child: Text('Actualizar datos'),
+                ),
+              ),
+              SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut();
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                  child: Text('Cerrar sesión'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
