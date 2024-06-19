@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 FirebaseFirestore db = FirebaseFirestore.instance;
 
@@ -19,6 +20,7 @@ Future<List> getPets() async {
       "isOwned": data['isOwned'],
       "imagePath": data['imagePath'],
       "reward": data['reward'] ?? '0',
+      "userId": data['userId'],
     };
     pets.add(pet);
   });
@@ -28,7 +30,7 @@ Future<List> getPets() async {
 
 // Guardar en base de datos
 Future<void> addPets(String type, String name, GeoPoint location, String gender,
-    bool lost, String isOwned, String imagePath, String reward) async {
+    bool lost, String isOwned, String imagePath, String userId, String reward) async {
   await db.collection("pets").add({
     "type": type,
     "name": name,
@@ -37,6 +39,7 @@ Future<void> addPets(String type, String name, GeoPoint location, String gender,
     "lost": lost,
     "isOwned": isOwned,
     "imagePath": imagePath,
+    "userId": userId, // Guarda el UID del usuario
     "reward": reward,
   });
 }
@@ -44,6 +47,7 @@ Future<void> addPets(String type, String name, GeoPoint location, String gender,
 // Actualizar en base de datos
 Future<void> updatePets(String uid, String newtype, String newname,
     GeoPoint newlocation, String newgender, bool newlost, String newisOwned, String newimagePath, String newReward) async {
+  final User? user = FirebaseAuth.instance.currentUser;
   await db.collection("pets").doc(uid).set({
     "type": newtype,
     "name": newname,
@@ -53,6 +57,7 @@ Future<void> updatePets(String uid, String newtype, String newname,
     "isOwned": newisOwned,
     "imagePath": newimagePath,
     "reward": newReward,
+    "userId": user?.uid,
   });
 }
 

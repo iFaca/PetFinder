@@ -33,7 +33,10 @@ class _SearchPageState extends State<SearchPage> {
     }
 
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('pets').snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('pets')
+          .where('lost', isEqualTo: true)
+          .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(

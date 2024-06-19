@@ -95,21 +95,24 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             _bottomAction(FontAwesomeIcons.search, () {
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) =>
-                      SearchPage())); // Vincula a la página de búsqueda
+                builder: (context) => SearchPage(),
+              )); // Vincula a la página de búsqueda
             }),
             _bottomAction(FontAwesomeIcons.paw, () {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => PetsPage()));
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => PetsPage(),
+              ));
             }),
             const SizedBox(width: 48.0),
             _bottomAction(FontAwesomeIcons.user, () {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => UserPage()));
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => UserPage(),
+              ));
             }),
             _bottomAction(Icons.settings, () {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => ConfigPage()));
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => ConfigPage(),
+              ));
             }),
           ],
         ),
@@ -167,22 +170,27 @@ class _PetsPageState extends State<PetsPage> {
       ),
       body: FutureBuilder(
         future: getPets(),
-        builder: ((context, snapshot) {
+        builder: (context, snapshot) {
           if (snapshot.hasData) {
+            final User? user = FirebaseAuth.instance.currentUser;
+            final userPets = snapshot.data
+                ?.where((pet) => pet['userId'] == user?.uid)
+                .toList();
             return ListView.builder(
-              itemCount: snapshot.data?.length,
+              itemCount: userPets?.length,
               itemBuilder: (context, index) {
-                final pet = snapshot.data?[index];
+                final pet = userPets?[index];
                 final location = pet['location'] as GeoPoint;
                 final petType = pet['type'];
                 final gender = pet['gender'];
-                final genderColor = gender.toLowerCase() == 'macho' ? Colors.blue : Colors.pink;
+                final genderColor =
+                    gender.toLowerCase() == 'macho' ? Colors.blue : Colors.pink;
                 final isLost = pet['lost'] == true;
 
                 return Dismissible(
                   onDismissed: (direction) async {
                     await deletePets(pet['uid']);
-                    snapshot.data?.removeAt(index);
+                    userPets?.removeAt(index);
                   },
                   confirmDismiss: (direction) async {
                     bool result = false;
@@ -190,13 +198,15 @@ class _PetsPageState extends State<PetsPage> {
                       context: context,
                       builder: (context) {
                         return AlertDialog(
-                          title: Text("¿Está seguro que quiere eliminar a ${pet['type']}?"),
+                          title: Text(
+                              "¿Está seguro que quiere eliminar a ${pet['type']}?"),
                           actions: [
                             TextButton(
                               onPressed: () {
                                 return Navigator.pop(context, false);
                               },
-                              child: const Text("Cancelar", style: TextStyle(color: Colors.red)),
+                              child: const Text("Cancelar",
+                                  style: TextStyle(color: Colors.red)),
                             ),
                             TextButton(
                               onPressed: () {
@@ -217,13 +227,17 @@ class _PetsPageState extends State<PetsPage> {
                   direction: DismissDirection.endToStart,
                   key: UniqueKey(),
                   child: Container(
-                    color: isLost ? Colors.red.withOpacity(0.1) : Colors.transparent,
+                    color: isLost
+                        ? Colors.red.withOpacity(0.1)
+                        : Colors.transparent,
                     child: ListTile(
                       leading: Icon(
                         petType.toLowerCase() == 'perro'
                             ? FontAwesomeIcons.dog
                             : FontAwesomeIcons.cat,
-                        color: petType.toLowerCase() == 'perro' ? Colors.brown : Colors.orange,
+                        color: petType.toLowerCase() == 'perro'
+                            ? Colors.brown
+                            : Colors.orange,
                       ),
                       title: Row(
                         children: [
@@ -251,7 +265,8 @@ class _PetsPageState extends State<PetsPage> {
                           ),
                           InkWell(
                             onTap: () {
-                              _showLocationOnMap(location.latitude, location.longitude);
+                              _showLocationOnMap(
+                                  location.latitude, location.longitude);
                             },
                             child: Text(
                               'Ubicación',
@@ -287,7 +302,7 @@ class _PetsPageState extends State<PetsPage> {
               child: CircularProgressIndicator(),
             );
           }
-        }),
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -338,7 +353,8 @@ class UserPage extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red, // Cambiar el color del botón a rojo
+                backgroundColor:
+                    Colors.red, // Cambiar el color del botón a rojo
               ),
               onPressed: () async {
                 await FirebaseAuth.instance.signOut();

@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petfinder/firebase_service.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AddPetPage extends StatefulWidget {
   const AddPetPage({Key? key}) : super(key: key);
@@ -29,6 +30,7 @@ class _AddPetPageState extends State<AddPetPage> {
 
   final _formKey = GlobalKey<FormState>(); // Llave para el formulario
   final ImagePicker _picker = ImagePicker();
+  final User? user = FirebaseAuth.instance.currentUser;
 
   @override
   void initState() {
@@ -315,7 +317,9 @@ class _AddPetPageState extends State<AddPetPage> {
                     if (_formKey.currentState!.validate() &&
                         _selectedLocation != null &&
                         petType.isNotEmpty &&
-                        gender.isNotEmpty) {
+                        gender.isNotEmpty &&
+                        user != null) {
+                      // Verifica que el usuario esté autenticado
                       GeoPoint location = GeoPoint(
                         _selectedLocation!.latitude,
                         _selectedLocation!.longitude,
@@ -329,6 +333,8 @@ class _AddPetPageState extends State<AddPetPage> {
                         lost,
                         isOwned,
                         _image?.path ?? '',
+                        user!.uid,
+                        // Agrega el UID del usuario
                         isOwned == 'Sí' && lost == true
                             ? rewardController.text
                             : '0',
