@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -28,7 +29,11 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildSearchResults() {
     if (_searchQuery.isEmpty) {
       return Center(
-        child: Text('Escribe algo para buscar'),
+        child: Image.asset(
+          'assets/images/busqueda.gif',
+          width: 300,
+          height: 300,
+        ),
       );
     }
 

@@ -43,6 +43,7 @@ dependencies:
   cloud_firestore: ^5.0.1
   image_picker: ^1.1.2
   firebase_auth: ^5.1.0
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +65,7 @@ flutter:
     - assets/images/logo.png
     - assets/images/petfinder.png
     - assets/images/zeus.png
+    - assets/images/busqueda.gif
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
