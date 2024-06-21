@@ -137,21 +137,34 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _maps() {
-    return Container(
-      height: 300,
-      child: GoogleMap(
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: CameraPosition(
-          target: LatLng(0, 0),
-          zoom: 12,
+    return Stack(
+      children: [
+        GoogleMap(
+          onMapCreated: _onMapCreated,
+          initialCameraPosition: CameraPosition(
+            target: LatLng(0, 0),
+            zoom: 12,
+          ),
+          markers: _markers.toSet(),
+          onTap: (LatLng location) {
+            _loadMarkers(); // Actualizar los marcadores cuando se toca el mapa
+          },
+          onCameraIdle:
+              _loadMarkers, // Actualizar los marcadores cuando la cámara se detiene
         ),
-        markers: _markers.toSet(),
-        onTap: (LatLng location) {
-          _loadMarkers(); // Actualizar los marcadores cuando se toca el mapa
-        },
-        onCameraIdle:
-            _loadMarkers, // Actualizar los marcadores cuando la cámara se detiene
-      ),
+        Positioned(
+          top: 5, // Ajusta este valor para mover el logo más arriba o más abajo
+          left: MediaQuery.of(context).size.width / 2 - 150,
+          child: Opacity(
+            opacity: 0.3,
+            child: Image.asset(
+              'assets/images/petfinder.png',
+              width: 300,
+              height: 300,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -394,109 +407,109 @@ class _UserPageState extends State<UserPage> {
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              if (user != null)
-                Center(
-                  child: Text(
-                    'Email: ${user!.email}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    if (user != null)
+                      Center(
+                        child: Text(
+                          'Email: ${user!.email}',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Icon(FontAwesomeIcons.user),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _nameController,
+                            decoration: InputDecoration(labelText: 'Nombre'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor ingrese su nombre';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    textAlign: TextAlign.center,
-                  ),
+                    SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Icon(FontAwesomeIcons.home),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _addressController,
+                            decoration: InputDecoration(labelText: 'Dirección'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor ingrese su dirección';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Icon(FontAwesomeIcons.phone),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _contactController,
+                            decoration: InputDecoration(labelText: 'Contacto'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor ingrese su contacto';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _saveUserData,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                        ),
+                        child: Text('Actualizar datos'),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        onPressed: () async {
+                          await FirebaseAuth.instance.signOut();
+                          Navigator.pushReplacementNamed(context, '/login');
+                        },
+                        child: Text('Cerrar sesión'),
+                      ),
+                    ),
+                  ],
                 ),
-              SizedBox(height: 20),
-              Row(
-                children: [
-                  Icon(FontAwesomeIcons.user),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _nameController,
-                      decoration: InputDecoration(labelText: 'Nombre'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese su nombre';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
               ),
-              SizedBox(height: 20),
-              Row(
-                children: [
-                  Icon(FontAwesomeIcons.home),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _addressController,
-                      decoration: InputDecoration(labelText: 'Dirección'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese su dirección';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 20),
-              Row(
-                children: [
-                  Icon(FontAwesomeIcons.phone),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _contactController,
-                      decoration: InputDecoration(labelText: 'Contacto'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese su contacto';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _saveUserData,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                  ),
-                  child: Text('Actualizar datos'),
-                ),
-              ),
-              SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                  ),
-                  onPressed: () async {
-                    await FirebaseAuth.instance.signOut();
-                    Navigator.pushReplacementNamed(context, '/login');
-                  },
-                  child: Text('Cerrar sesión'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

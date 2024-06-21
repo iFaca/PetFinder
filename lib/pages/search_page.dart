@@ -29,10 +29,17 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildSearchResults() {
     if (_searchQuery.isEmpty) {
       return Center(
-        child: Image.asset(
-          'assets/images/busqueda.gif',
-          width: 300,
-          height: 300,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Spacer(flex: 1),
+            Image.asset(
+              'assets/images/busqueda.gif',
+              width: 300,
+              height: 300,
+            ),
+            Spacer(flex: 3),
+          ],
         ),
       );
     }
