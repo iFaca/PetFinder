@@ -25,7 +25,7 @@ class _AddPetPageState extends State<AddPetPage> {
   late CameraPosition _initialCameraPosition;
   List<Marker> _markers = [];
   File? _image;
-  String isOwned = "No";
+  String isOwned = "Sí";
   String petType = "Perro";
 
   final _formKey = GlobalKey<FormState>(); // Llave para el formulario
@@ -201,6 +201,9 @@ class _AddPetPageState extends State<AddPetPage> {
                             onChanged: (String? newValue) {
                               setState(() {
                                 isOwned = newValue!;
+                                if (isOwned == 'No') {
+                                  lost = true; // Aquí se selecciona automáticamente "Sí" en "¿Está perdida?"
+                                }
                               });
                             },
                           ),
@@ -219,8 +222,7 @@ class _AddPetPageState extends State<AddPetPage> {
                                 value: value,
                                 child: Text(
                                   value ? 'Sí' : 'No',
-                                  style: TextStyle(
-                                      color: value ? Colors.red : Colors.black),
+                                  style: TextStyle(color: value ? Colors.red : Colors.black),
                                 ),
                               );
                             }).toList(),

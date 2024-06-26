@@ -197,8 +197,10 @@ class _PetsPageState extends State<PetsPage> {
                 final petType = pet['type'];
                 final gender = pet['gender'];
                 final genderColor =
-                    gender.toLowerCase() == 'macho' ? Colors.blue : Colors.pink;
+                gender.toLowerCase() == 'macho' ? Colors.blue : Colors.pink;
                 final isLost = pet['lost'] == true;
+                final isOwned = pet['isOwned'] == 'Sí';
+                final isFound = pet['isOwned'] == 'No' && pet['lost'] == true;
 
                 return Dismissible(
                   onDismissed: (direction) async {
@@ -241,7 +243,9 @@ class _PetsPageState extends State<PetsPage> {
                   key: UniqueKey(),
                   child: Container(
                     color: isLost
+                        ? (isOwned
                         ? Colors.red.withOpacity(0.1)
+                        : Colors.green.withOpacity(0.1))
                         : Colors.transparent,
                     child: ListTile(
                       leading: Icon(
@@ -255,13 +259,24 @@ class _PetsPageState extends State<PetsPage> {
                       title: Row(
                         children: [
                           Text(pet['name']),
-                          if (isLost)
+                          if (isLost && isOwned)
                             Padding(
                               padding: const EdgeInsets.only(left: 8.0),
                               child: Text(
                                 'PERDIDA',
                                 style: TextStyle(
                                   color: Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          if (isFound)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Text(
+                                'ENCONTRADA',
+                                style: TextStyle(
+                                  color: Colors.green,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -282,7 +297,7 @@ class _PetsPageState extends State<PetsPage> {
                                   location.latitude, location.longitude);
                             },
                             child: Text(
-                              'Ubicación',
+                              'Ver ubicación',
                               style: TextStyle(
                                 color: Colors.blue,
                                 decoration: TextDecoration.underline,
